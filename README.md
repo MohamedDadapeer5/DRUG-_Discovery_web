@@ -6,7 +6,7 @@ An advanced medicine search system with a beautiful, modern interface built usin
 
 ## ✨ Features
 
-- **🎯 4 Advanced Search Types**: Prefix Quest, Deep Scan, AI Search, and Smart Match
+- **🎯 4 Advanced Search Types**: Prefix Search, Substring Search, Full-text Search, and Fuzzy Search
 - **🌊 Massive Database**: 280,227+ unique medicine records with complete pharmaceutical information
 - **🚀 High Performance**: Lightning-fast search results with optimized PostgreSQL queries
 - **💎 Beautiful UI**: Stunning PharmaVerse interface with glassmorphism design and smooth animations
@@ -95,36 +95,36 @@ Open your browser and navigate to:
 
 ## 🔍 Search Types Explained
 
-### 🎯 **Prefix Quest**
+### 🎯 **Prefix Search**
 - Finds medicines that **start with** your search term
-- Perfect for: "asp" → finds "Aspirin", "Asparagus Extract"
+- Perfect for: "Ava" → finds "Avastin", "Avapro"
 - Best when: You know the beginning of a medicine name
 
-### 🔍 **Deep Scan**  
+### 🔍 **Substring Search**  
 - Finds medicines that **contain** your search term anywhere
-- Perfect for: "pain" → finds "Aspirin", "Pain Relief", "Ibuprofen Pain"
-- Best when: Searching by common medical terms
+- Perfect for: "Injection" → finds all injection medicines like "Avastin 100mg Injection", "Insulin Injection"
+- Best when: Searching by medicine form or common terms
 
-### 🧠 **AI Search**
+### 🧠 **Full-text Search**
 - Intelligent search with **ranking and relevance scoring**
 - Handles multiple words and prioritizes exact matches
-- Perfect for: "heart medicine" → finds cardiovascular drugs ranked by relevance
-- Best when: Complex queries with multiple terms
+- Perfect for: "antibiotic" → finds relevant antibiotic medicines ranked by relevance
+- Best when: Complex queries with multiple terms or medical categories
 
-### 🌊 **Smart Match**
+### 🌊 **Fuzzy Search**
 - **Handles typos** and similar spellings using fuzzy matching
 - Uses similarity scoring to find close matches
-- Perfect for: "aspirn" → finds "Aspirin", "paracetmol" → finds "Paracetamol"
-- Best when: You're unsure of exact spelling
+- Perfect for: "Avastn" (typo) → finds "Avastin", "paracetmol" → finds "Paracetamol"
+- Best when: You're unsure of exact spelling or have typos
 
 ## 🌐 API Endpoints
 
 ### Search Endpoints
 ```http
-GET /search/prefix?q=medicine_name    # Prefix Quest
-GET /search/substring?q=medicine_name # Deep Scan  
-GET /search/fulltext?q=medicine_name  # AI Search
-GET /search/fuzzy?q=medicine_name     # Smart Match
+GET /search/prefix?q=medicine_name    # Prefix Search
+GET /search/substring?q=medicine_name # Substring Search  
+GET /search/fulltext?q=medicine_name  # Full-text Search
+GET /search/fuzzy?q=medicine_name     # Fuzzy Search
 ```
 
 ### Health Check
@@ -134,22 +134,25 @@ GET /health                           # System status
 
 ### Example API Calls
 ```bash
-# Prefix search for medicines starting with "asp"
-curl "http://localhost:8000/search/prefix?q=asp"
+# Prefix search for medicines starting with "Ava"
+curl "http://localhost:8000/search/prefix?q=Ava"
 
-# Smart Match handles typos - "aspirn" finds "aspirin"
-curl "http://localhost:8000/search/fuzzy?q=aspirn"
+# Substring search for all injection medicines
+curl "http://localhost:8000/search/substring?q=Injection"
 
-# AI Search for complex queries
-curl "http://localhost:8000/search/fulltext?q=pain%20relief"
+# Full-text search for antibiotic medicines
+curl "http://localhost:8000/search/fulltext?q=antibiotic"
+
+# Fuzzy search handles typos - "Avastn" finds "Avastin"
+curl "http://localhost:8000/search/fuzzy?q=Avastn"
 ```
 
 ## 🎮 How to Use PharmaVerse
 
 1. **🚀 Launch the application** following the setup steps above
 2. **🌐 Open your browser** and go to `http://localhost:8000`
-3. **🎯 Select search type** from the four magical options
-4. **⌨️ Type medicine name** in the search box (try: "Avastin", "Paracetamol", "pain")
+3. **🎯 Select search type** from the four search options
+4. **⌨️ Type medicine name** in the search box (try: "Ava", "Injection", "antibiotic", "Avastn")
 5. **🔍 Click Explore** or press Enter to search
 6. **✨ View results** in the beautiful 2-column card layout
 7. **📊 See statistics** showing search performance and result count
@@ -223,10 +226,10 @@ CREATE INDEX idx_medicines_name_lower ON medicines(LOWER(name));
 - **Memory Efficient**: Optimized PostgreSQL queries with proper indexing
 
 ### 🎯 Search Accuracy
-- **Prefix Quest**: 100% accuracy for exact prefix matches
-- **Deep Scan**: Comprehensive substring detection
-- **AI Search**: Intelligent ranking with relevance scoring
-- **Smart Match**: 85%+ accuracy for typo correction
+- **Prefix Search**: 100% accuracy for exact prefix matches
+- **Substring Search**: Comprehensive substring detection
+- **Full-text Search**: Intelligent ranking with relevance scoring
+- **Fuzzy Search**: 85%+ accuracy for typo correction
 
 ## 🔧 Troubleshooting
 

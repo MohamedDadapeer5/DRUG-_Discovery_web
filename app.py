@@ -405,16 +405,16 @@ async def root():
         </div>
         <div class="search-section">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Discover medicines across the PharmaVerse..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="🔍 Try: Ava, Injection, antibiotic, or Avastn..." autocomplete="off">
                 <button class="search-btn-main" onclick="searchMedicines()">
                     <span>🚀 Explore</span>
                 </button>
             </div>
             <div class="search-types">
-                <button class="search-btn active" id="prefix-btn" onclick="setSearchType('prefix')">🎯 Prefix Quest</button>
-                <button class="search-btn" id="substring-btn" onclick="setSearchType('substring')">🔍 Deep Scan</button>
-                <button class="search-btn" id="fulltext-btn" onclick="setSearchType('fulltext')">🧠 AI Search</button>
-                <button class="search-btn" id="fuzzy-btn" onclick="setSearchType('fuzzy')">🌊 Smart Match</button>
+                <button class="search-btn active" id="prefix-btn" onclick="setSearchType('prefix')">🎯 Prefix Search</button>
+                <button class="search-btn" id="substring-btn" onclick="setSearchType('substring')">🔍 Substring Search</button>
+                <button class="search-btn" id="fulltext-btn" onclick="setSearchType('fulltext')">🧠 Full-text Search</button>
+                <button class="search-btn" id="fuzzy-btn" onclick="setSearchType('fuzzy')">🌊 Fuzzy Search</button>
             </div>
         </div>
         <div id="results" class="results"></div>
@@ -493,10 +493,10 @@ async def root():
                 const resultsDiv = document.getElementById('results');
                 if (data.results && data.results.length > 0) {
                     const searchTypeNames = {
-                        'prefix': '🎯 Prefix Quest',
-                        'substring': '🔍 Deep Scan', 
-                        'fulltext': '🧠 AI Search',
-                        'fuzzy': '🌊 Smart Match'
+                        'prefix': '🎯 Prefix Search',
+                        'substring': '🔍 Substring Search', 
+                        'fulltext': '🧠 Full-text Search',
+                        'fuzzy': '🌊 Fuzzy Search'
                     };
                     
                     resultsDiv.innerHTML = `
@@ -535,16 +535,16 @@ async def root():
                 } else {
                     resultsDiv.innerHTML = `
                         <div class="no-results">
-                            🌙 The magic orb shows no medicines for "${query}"<br>
-                            💫 Try different incantations or change your spell type ✨
+                            🔍 No medicines found for "${query}"<br>
+                            � Try different search terms or change your search type
                         </div>
                     `;
                 }
             } catch (error) {
                 document.getElementById('results').innerHTML = `
                     <div class="no-results">
-                        🌩️ A magical disturbance occurred in the realm<br>
-                        🔮 Please try casting your spell again
+                        ⚠️ Search error occurred<br>
+                        � Please try again or check your connection
                     </div>
                 `;
                 console.error('Search error:', error);
