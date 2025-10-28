@@ -8,7 +8,7 @@ def get_db_connection():
     return psycopg2.connect(
         dbname="medicine_search",
         user="postgres",
-        password="Dadapeer",  # Your PostgreSQL password
+        password="Dadapeer",  
         host="localhost",
         port="5432"
     )

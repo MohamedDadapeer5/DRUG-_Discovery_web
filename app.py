@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import time
 import re
+import difflib
 
 load_dotenv()
 
@@ -33,7 +34,7 @@ async def root():
     return """<!DOCTYPE html>
 <html>
 <head>
-    <title>🌟 PharmaVerse - The Ultimate Drug Discovery Hub</title>
+    <title> PharmaVerse - The Ultimate Drug Discovery Hub</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -46,7 +47,8 @@ async def root():
         
         body { 
             font-family: 'Poppins', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Coffee -> Black gradient */
+            background: linear-gradient(135deg, #3b2f2f 0%, #0b0b0b 100%);
             min-height: 100vh; 
             padding: 20px;
             overflow-x: hidden;
@@ -155,14 +157,15 @@ async def root():
         .search-btn-main { 
             padding: 20px 35px; 
             font-size: 18px; 
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            /* Coffee button with deep black edge */
+            background: linear-gradient(45deg, #4b362f, #0b0b0b);
             color: white; 
             border: none; 
             border-radius: 25px; 
             cursor: pointer; 
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 600; 
-            box-shadow: 0 8px 25px rgba(255,107,107,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.45);
             position: relative;
             overflow: hidden;
         }
@@ -183,9 +186,9 @@ async def root():
         }
         
         .search-btn-main:hover { 
-            background: linear-gradient(45deg, #5a67d8, #6b46c1);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 35px rgba(255,107,107,0.4);
+            background: linear-gradient(45deg, #3f2a24, #171313);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
         
         .search-types { 
@@ -236,11 +239,11 @@ async def root():
         }
         
         .search-btn.active { 
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #4b362f, #171313);
             color: white; 
             border-color: transparent;
-            box-shadow: 0 8px 25px rgba(255,107,107,0.4);
-            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            transform: scale(1.06);
         }
         
         .results { 
@@ -329,7 +332,7 @@ async def root():
         }
         
         .score { 
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #4b362f, #0b0b0b);
             color: white; 
             padding: 6px 15px; 
             border-radius: 25px; 
@@ -399,9 +402,9 @@ async def root():
 <body>
     <div class="floating-particles"></div>
     <div class="container">
-        <h1>🌟 PharmaVerse 🚀</h1>
+        <h1> PharmaVerse </h1>
         <div class="subtitle">
-            The Ultimate Drug Discovery Universe ✨ Explore 280K+ Medicines
+            The Ultimate Drug Discovery Universe, Explore 280K+ Medicines
         </div>
         <div class="search-section">
             <div class="search-box">
@@ -727,28 +730,38 @@ async def search_fuzzy(q: str = Query(..., min_length=1, max_length=100)):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Fuzzy search using trigrams with similarity scoring
+        # Get a broader set of potential matches for fuzzy search
         cursor.execute("""
-            SELECT name, manufacturer_name, type, price, pack_size_label, short_composition,
-                   similarity(name, %s) as similarity_score
+            SELECT name, manufacturer_name, type, price, pack_size_label, short_composition
             FROM medicines
-            WHERE similarity(name, %s) > 0.3
-            ORDER BY similarity_score DESC, name
-            LIMIT 100
+            WHERE LOWER(name) LIKE '%%' || LOWER(%s) || '%%'
+               OR LOWER(name) LIKE '%%' || LOWER(SUBSTRING(%s, 1, 3)) || '%%'
+            LIMIT 200
         """, (q, q))
-        results = []
-        for row in cursor.fetchall():
-            results.append({
-                "name": row[0],
-                "manufacturer_name": row[1],
-                "type": row[2],
-                "price": row[3],
-                "pack_size_label": row[4],
-                "short_composition": row[5],
-                "similarity_score": row[6]
-            })
+        
+        raw_results = cursor.fetchall()
         cursor.close()
         conn.close()
+        
+        # Calculate similarity scores in Python
+        results = []
+        for row in raw_results:
+            similarity = calculate_similarity(q, row[0])
+            if similarity > 0.1:  # Filter threshold
+                results.append({
+                    "name": row[0],
+                    "manufacturer_name": row[1],
+                    "type": row[2],
+                    "price": row[3],
+                    "pack_size_label": row[4],
+                    "short_composition": row[5],
+                    "similarity_score": similarity
+                })
+        
+        # Sort by similarity score
+        results.sort(key=lambda x: x["similarity_score"], reverse=True)
+        results = results[:100]  # Limit to 100
+        
         execution_time = time.time() - start_time
         return {
             "query": q,
@@ -758,8 +771,31 @@ async def search_fuzzy(q: str = Query(..., min_length=1, max_length=100)):
             "execution_time_ms": round(execution_time * 1000, 2)
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Run using module path when reload=True so the reloader can watch files
+    # Use localhost by default to match `python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload`
+    uvicorn.run(
+        "app:app",
+        host=os.getenv("HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", 8000)),
+        reload=True,
+    )
+
+
+def calculate_similarity(query: str, text: str) -> float:
+    """Return a similarity ratio between 0 and 1 for two strings.
+
+    Uses difflib.SequenceMatcher which is available in the stdlib. This
+    lets the fuzzy endpoint work even if the pg_trgm extension or
+    similarity() function is not available on the database.
+    """
+    try:
+        if not text:
+            return 0.0
+        return difflib.SequenceMatcher(None, query.lower(), text.lower()).ratio()
+    except Exception:
+        return 0.0
